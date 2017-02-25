@@ -1,0 +1,228 @@
+function check {
+  echo -ne "$*\t"
+}
+
+function ok {
+  echo -e "[ \e[38;5;32msuccess\e[0m ]"
+}
+
+function nok {
+  echo -e "[ \e[38;5;31mfailure\e[0m ]"
+}
+
+function warn {
+  echo -e "[ \e[38;5;33mwarning\e[0m ]"
+}
+
+function format {
+  awk -F'\t' '{ printf "%-60s %s\n",$1,$2 }'
+}
+
+function slowcat {
+[[ -z "${3}" ]] && echo usage: $0 file chunksize waittime && return 1
+  local c=0
+  local b=$(wc -c <${1})
+    while [ ${c} -lt ${b} ]; do
+    dd if=${1} bs=1 count=${2} skip=${c} 2>/dev/null
+    (( c = c + ${2} ))
+    sleep ${3}
+  done
+}
+
+function index {
+  echo "<HTML><HEAD><TITLE>LINKS</TITLE></HEAD><BODY><ul>" >index.html
+  for file in $(ls|grep -v index.html); do \
+    (\
+      printf '<li><a href="' ; \
+      printf "${file}" ; \
+      printf '">' ; \
+      printf "${file}" ; \
+      printf '</a></li>\n' \
+    ) >>index.html ; \
+  done
+  echo "</ul></BODY></HTML>" >>index.html
+}
+
+function push {
+  git init
+  git config user.name "${USER}"
+  git config user.email "${GHP_MAIL}"
+  git add .
+  git commit -m "Deploy to GitHub Pages"
+  git push --force --quiet https://${GHP_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git master:gh-pages
+}
+
+wd=$(pwd)
+bochs_src=https://github.com/svn2github/bochs.git
+ftproot=$(grep "^ftp:" /etc/passwd|cut -d ':' -f 6)
+ftpconv=$(find /etc/ -name vsftpd.conf 2>/dev/null|fgrep -v init)
+flop=BSD/386bsd-0.1/bootable/dist.fs
+ip=$(ifconfig eth0|grep "inet addr:"|awk '{print $2}'|sed -e's/.*://')
+
+cat >bochsrc <<__EOF
+config_interface: textconfig
+display_library: term
+romimage: file=$BXSHARE/BIOS-bochs-legacy
+cpu: count=1, ips=80000000, reset_on_triple_fault=0
+megs: 8
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+vga: extension=none
+floppya: 1_44=boot.img, status=inserted
+ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
+ata0-master: type=disk, path="disk.img", mode=flat, cylinders=1024, heads=16, spt=63, translation=none, model=generic
+boot: disk, floppy
+floppy_bootsig_check: disabled=0
+log: bochsout.txt
+panic: action=ask
+error: action=ignore
+info: action=ignore
+debug: action=ignore
+#vga_update_interval: 400000
+#keyboard_serial_delay: 250
+#keyboard_paste_delay: 2991000
+mouse: enabled=0
+private_colormap: enabled=0
+#keyboard_mapping: enabled=0, map=
+#i440fxsupport: enabled=0
+ne2k: ioaddr=0x300, irq=9, mac=fe:fd:00:00:00:01, ethmod=tuntap, ethdev=/dev/net/tun, script=./tunconfig
+com1: enabled=0
+#com1: enabled=1, mode=file, dev=serial.out
+clock: time0=740756888
+__EOF
+
+
+# usr/src/sys.386bsd/i386/isa/clock.c suffers from a Y2K bug
+# setting the time to the current date results in timestamps
+# set to to 1970.
+#
+# if you want time accurate timestamps you can set time0 in
+# bochsrc
+#
+# reasonable values are:
+#
+# - 711244800 - release date
+# - 735327993 - first patch kit
+# - 740756888 - second patch kit
+#
+# in this build 386bsd 0.1 as released is installed
+# and the 2 patch kits are placed on the filesystem
+# for later use, hence the choice for 740756888
+
+cat >tunconfig <<"__EOF"
+#!/bin/bash
+(
+sudo /sbin/ifconfig ${1##/*0/} 192.168.1.1
+# carnival, put your masks on and go
+sudo /sbin/iptables -D POSTROUTING -t nat -s 192.168.1.0/24 ! -d 192.168.1.0/24 -j MASQUERADE >& /dev/null
+sudo /sbin/iptables -t nat -s 192.168.1.0/24 ! -d 192.168.1.0/24 -A POSTROUTING -j MASQUERADE
+#echo 1 > /proc/sys/net/ipv4/ip_forward
+)>tunconfig.log 2>&1
+__EOF
+chmod +x tunconfig
+
+(
+check checking wget;                   wget --help                                    >/dev/null 2>&1 && ok || nok
+check checking gcc;                    gcc --version                                  >/dev/null 2>&1 && ok || nok
+check checking gcc-c++;                g++ --version                                  >/dev/null 2>&1 && ok || nok
+check checking ncurses;                ls -l /usr/include/ncurses.h                   >/dev/null 2>&1 && ok || nok
+check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                       >/dev/null 2>&1 && ok || nok
+check getting bochs sources;           git clone --depth 1 ${bochs_src}               >/dev/null 2>&1 && ok || nok
+check checking 386BSD 0.1;             ls -l BSD.tar.bz2                              >/dev/null 2>&1 && ok || nok
+check checking bochs sources;          cd bochs/bochs                                 >/dev/null 2>&1 && ok || nok
+check configuring bochs;               ./configure                                    \
+                                         --enable-cpu-level=3                         \
+                                         --enable-fpu                                 \
+                                         --enable-ne2000                              \
+                                         --with-term                                  \
+                                         --with-nogui                                 \
+                                         --enable-all-optimizations                   \
+                                         --enable-docbook=no                          >/dev/null 2>&1 && ok || nok
+check building bochs;                  make                                           >/dev/null 2>&1 && ok || nok
+check installing bochs;                sudo make install                              >/dev/null 2>&1 && ok || nok
+check setting capabilities;            sudo setcap                                    \
+                                         CAP_NET_ADMIN,CAP_NET_RAW=eip                \
+                                         /usr/local/bin/bochs                         >/dev/null 2>&1 && ok || nok
+check opening anon ftp and rate limit; printf "anonymous_enable=Yes\n"                \
+                                                       |sudo tee -a ${ftpconv}        >/dev/null 2>&1 && ok || nok
+check checking ftproot;                cd ${ftproot}                                  >/dev/null 2>&1 && ok || nok
+check extracting distribution/patches; bunzip2 -c ${wd}/BSD.tar.bz2 |sudo tar -xf -   >/dev/null 2>&1 && ok || nok
+check correct ownership;               sudo chown -R ftp:ftp ${ftproot}               >/dev/null 2>&1 && ok || nok
+check correct ftproot permissions;     sudo chmod -R a-w ${ftproot}                   >/dev/null 2>&1 && ok || nok
+check correct file permissions;        sudo chmod 644 $(sudo find ${ftproot} -type f) >/dev/null 2>&1 && ok || nok
+check correct directory permissions;   sudo chmod 555 $(sudo find ${ftproot} -type d) >/dev/null 2>&1 && ok || nok
+check restarting vftpd;                sudo restart vsftpd                            >/dev/null 2>&1 && ok || nok
+check tunconfig script present;        cd $wd && ls tunconfig                         >/dev/null 2>&1 && ok || nok
+check checking for free range;         sudo ifconfig| fgrep -q                        \
+                                         $(grep iptables tunconfig                    \
+                                         |head -1                                     \
+                                         |sed -e's/.*-d //'                           \
+                                         |awk -F'.' '{print ":"$1"."$2"."}')          2>/dev/null && warn || ok
+check bochs config present;            ls bochsrc                                     >/dev/null 2>&1 && ok || nok
+check boot floppy;                     (sudo cat ${ftproot}/${flop};                  \
+                                         dd if=/dev/zero bs=1 count=245760            \
+                                         )>boot.img 2>/dev/null; ls boot.img          >/dev/null 2>&1 && ok || nok
+check creating empty disk;             printf "1\nhd\nflat\n504\ndisk.img\n" |bximage >/dev/null 2>&1 && ok || nok
+)|format
+
+
+# first boot ##########################
+cat >1 <<__EOF
+(echo y; echo y)|install
+__EOF
+
+touch out
+(
+  until grep -q '#' out ; do
+    sleep 5
+  done
+  slowcat ./1 2 .1
+)| TERM=vt100 bochs -q -f bochsrc |tee -a out
+mv out out_1.txt
+######################################
+
+# second boot ########################
+cat >2 <<__EOF
+echo "machine ${ip}" >.netrc
+echo "login ftp" >>.netrc
+echo "password ftp@oldbsd.org" >>.netrc
+echo "macdef init" >>.netrc
+echo "#" >>.netrc
+echo "prompt" >>.netrc
+echo "bin" >>.netrc
+echo "lcd /tmp" >>.netrc
+echo "cd BSD/386bsd-0.1/bindist/" >>.netrc
+echo "mget *" >>.netrc
+echo "cd ../etcdist/" >>.netrc
+echo "mget *" >>.netrc
+echo "cd ../srcdist/" >>.netrc
+echo "mget *" >>.netrc
+echo "cd ../../386bsd-patchkits" >>.netrc
+echo "mget *tar" >>.netrc
+echo "!echo odin |extract bin01" >>.netrc
+echo "!csh -c \"limit openfiles 512; extract src01 ; extract etc01 ; tar -cf /dist.tar /tmp/ ; cp pk023.tar /pk023.tar ; cp pk023024.tar /pk023024.tar ; sync ; sync ; sync ; /sbin/shutdown -r now\"" >>.netrc
+echo "quit" >>.netrc
+echo "#newl" >>.netrc
+echo "" >>.netrc
+chmod 400 .netrc
+cat .netrc
+ifconfig ne0 192.168.1.2 netmask 255.255.255.0 up
+route add default 192.168.1.1
+ftp ${ip}
+__EOF
+
+touch out
+(
+  until grep -q '#' out ; do
+    sleep 5
+  done
+  slowcat ./2 4 1
+)| TERM=vt100 bochs -q -f bochsrc |tee -a out
+mv out out_2.txt
+######################################
+
+check creating gh-pages;              mkdir gh-pages ; cd gh-pages                    >/dev/null 2>&1 && ok || nok
+check add the disk;                   mv ../disk.img ./                               >/dev/null 2>&1 && ok || nok
+check compress the disk               bzip2 --best disk.img                           >/dev/null 2>&1 && ok || nok
+check split the disk in parts         split -b 50m "disk.img.bz2" "disk.part-"        >/dev/null 2>&1 && ok || nok
+check create an index page            index                                           >/dev/null 2>&1 && ok || nok
+check push to gh-pages                push                                            >/dev/null 2>&1 && ok || nok
