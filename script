@@ -225,4 +225,5 @@ check add the disk;                   mv ../disk.img ./                         
 check compress the disk;              bzip2 --best disk.img                           >/dev/null 2>&1 && ok || nok
 check split the disk in parts;        split -b 50m "disk.img.bz2" "disk.part-"        >/dev/null 2>&1 && ok || nok
 check create an index page;           index                                           >/dev/null 2>&1 && ok || nok
-check push to gh-pages;               push                                            >/dev/null 2>&1 && ok || nok
+ls -l
+check push to gh-pages;               push #                                           >/dev/null 2>&1 && ok || nok
