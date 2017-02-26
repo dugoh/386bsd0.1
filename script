@@ -178,7 +178,7 @@ touch out
 )| TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_1.txt
 (
-check add 2 hours to clock            sed -i -e "s/740756888/740764088/" bochsrc      >/dev/null 2>&1 && ok || nok
+check add 2 hours to clock;           sed -i -e "s/740756888/740764088/" bochsrc      >/dev/null 2>&1 && ok || nok
 )|format
 ######################################
 
@@ -222,7 +222,7 @@ touch out
 )| TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_2.txt
 (
-check add 2 hours to clock            sed -i -e "s/740764088/740771288/" bochsrc      >/dev/null 2>&1 && ok || nok
+check add 2 hours to clock;           sed -i -e "s/740764088/740771288/" bochsrc      >/dev/null 2>&1 && ok || nok
 )|format
 ######################################
 
@@ -232,7 +232,7 @@ touch out
 TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_3.txt
 (
-check add 2 hours to clock            sed -i -e "s/740771288/740778488/" bochsrc      >/dev/null 2>&1 && ok || nok
+check add 2 hours to clock;           sed -i -e "s/740771288/740778488/" bochsrc      >/dev/null 2>&1 && ok || nok
 )|format
 ######################################
 
@@ -246,7 +246,6 @@ check add the floppy disk;            mv ../boot.img ./                         
 check add the bochs config;           mv ../bochsrc ./                                >/dev/null 2>&1 && ok || nok
 check add the TUN config;             mv ../tunconfig ./                              >/dev/null 2>&1 && ok || nok
 check add the screen output;          mv ../out_* ./                                  >/dev/null 2>&1 && ok || nok
-check remove the unsplit disk;        rm disk.img.bz2                                 >/dev/null 2>&1 && ok || nok
 check create an index page;           index                                           >/dev/null 2>&1 && ok || nok
 check push to gh-pages;               push                                            >/dev/null 2>&1 && ok || nok
 )|format
