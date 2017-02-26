@@ -91,22 +91,21 @@ clock: time0=740756888
 __EOF
 
 
-# usr/src/sys.386bsd/i386/isa/clock.c suffers from a Y2K bug
-# setting the time to the current date results in timestamps
-# set to to 1970.
+# usr/src/sys.386bsd/i386/isa/clock.c suffers from a Y2K bug.
+# Setting the time to the current date results in timestamps set to to 1970.
 #
-# if you want time accurate timestamps you can set time0 in
-# bochsrc
+# If you want sensible timestamps you can set time0 in bochsrc.
 #
 # reasonable values are:
 #
 # - 711244800 - release date
 # - 735327993 - first patch kit
 # - 740756888 - second patch kit
-#
-# in this build 386bsd 0.1 as released is installed
-# and the 2 patch kits are placed on the filesystem
-# for later use, hence the choice for 740756888
+
+# In this build 386bsd 0.1 as released is installed and the 2 patch kits
+# are placed on the filesystem for later use, hence the choice for 740756888.
+# After every boot this is incremented with 2 hours. This is done so the
+# arrow of time doesn't look broken.
 
 cat >tunconfig <<"__EOF"
 #!/bin/bash
@@ -178,7 +177,11 @@ touch out
   slowcat ./1 2 .1
 )| TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_1.txt
+(
+check add 2 hours to clock            sed -i -e "s/740756888/740764088/" bochsrc      >/dev/null 2>&1 && ok || nok
+)|format
 ######################################
+
 
 # second boot ########################
 cat >2 <<__EOF
@@ -218,7 +221,21 @@ touch out
   slowcat ./2 4 1
 )| TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_2.txt
+(
+check add 2 hours to clock            sed -i -e "s/740764088/740771288/" bochsrc      >/dev/null 2>&1 && ok || nok
+)|format
 ######################################
+
+
+# third boot #########################
+touch out
+TERM=vt100 bochs -q -f bochsrc |tee -a out
+mv out out_3.txt
+(
+check add 2 hours to clock            sed -i -e "s/740771288/740778488/" bochsrc      >/dev/null 2>&1 && ok || nok
+)|format
+######################################
+
 (
 check creating gh-pages;              mkdir gh-pages ; cd gh-pages                    >/dev/null 2>&1 && ok || nok
 check add the hard disk;              mv ../disk.img ./                               >/dev/null 2>&1 && ok || nok
