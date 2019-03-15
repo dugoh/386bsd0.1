@@ -133,8 +133,7 @@ check checking gcc-c++;                g++ --version                            
 check checking ncurses;                ls -l /usr/include/ncurses.h                   >/dev/null 2>&1 && ok || nok
 check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                       >/dev/null 2>&1 && ok || nok
 check checking 386BSD 0.1;             ls -l BSD.tar.bz2                              >/dev/null 2>&1 && ok || nok
-check getting bochs sources;           svn checkout ${bochs_src}  bochs-code     #                >/dev/null 2>&1 && ok || nok
-find ./ -type f -name configure
+check getting bochs sources;           svn checkout ${bochs_src}  bochs-code          >/dev/null 2>&1 && ok || nok
 check checking bochs sources;          cd bochs-code/bochs                            >/dev/null 2>&1 && ok || nok
 check configuring bochs;               ./configure                                    \
                                          --enable-cpu-level=3                         \
@@ -143,8 +142,8 @@ check configuring bochs;               ./configure                              
                                          --with-term                                  \
                                          --with-nogui                                 \
                                          --enable-all-optimizations                   \
-                                         --enable-docbook=no             #             >/dev/null 2>&1 && ok || nok
-check building bochs;                  make   -d                           #             >/dev/null 2>&1 && ok || nok
+                                         --enable-docbook=no                          >/dev/null 2>&1 && ok || nok
+check building bochs;                  make                             #             >/dev/null 2>&1 && ok || nok
 check installing bochs;                sudo make install                              >/dev/null 2>&1 && ok || nok
 check setting capabilities;            sudo setcap                                    \
                                          CAP_NET_ADMIN,CAP_NET_RAW=eip                \
