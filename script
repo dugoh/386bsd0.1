@@ -135,8 +135,8 @@ check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                 
 check checking 386BSD 0.1;             ls -l BSD.tar.bz2                              >/dev/null 2>&1 && ok || nok
 check getting bochs sources;           svn checkout ${bochs_src}  bochs-code          >/dev/null 2>&1 && ok || nok
 check checking bochs sources;          cd bochs-code/bochs                            >/dev/null 2>&1 && ok || nok
+                                        # try w/o --enable-cpu-level=3                         \
 check configuring bochs;               ./configure                                    \
-                                         --enable-cpu-level=3                         \
                                          --enable-fpu                                 \
                                          --enable-ne2000                              \
                                          --with-term                                  \
