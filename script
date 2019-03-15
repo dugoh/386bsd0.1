@@ -136,8 +136,8 @@ check configuring bochs;               ./configure                              
                                          --with-term                                  \
                                          --with-nogui                                 \
                                          --enable-all-optimizations                   \
-                                         --enable-docbook=no                          >/dev/null 2>&1 && ok || nok
-check building bochs;                  make                                           >/dev/null 2>&1 && ok || nok
+                                         --enable-docbook=no             #             >/dev/null 2>&1 && ok || nok
+check building bochs;                  make                              #             >/dev/null 2>&1 && ok || nok
 check installing bochs;                sudo make install                              >/dev/null 2>&1 && ok || nok
 check setting capabilities;            sudo setcap                                    \
                                          CAP_NET_ADMIN,CAP_NET_RAW=eip                \
