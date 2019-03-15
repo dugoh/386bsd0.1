@@ -55,7 +55,7 @@ function push {
 wd=$(pwd)
 # R.I.P. svn2github
 # bochs_src=https://github.com/svn2github/bochs.git
-bochs_src=https://svn.code.sf.net/p/bochs/code/trunk bochs-code
+bochs_src=https://svn.code.sf.net/p/bochs/code/trunk
 ftproot=$(grep "^ftp:" /etc/passwd|cut -d ':' -f 6)
 ftpconv=$(find /etc/ -name vsftpd.conf 2>/dev/null|fgrep -v init)
 flop=BSD/386bsd-0.1/bootable/dist.fs
@@ -133,7 +133,7 @@ check checking gcc-c++;                g++ --version                            
 check checking ncurses;                ls -l /usr/include/ncurses.h                   >/dev/null 2>&1 && ok || nok
 check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                       >/dev/null 2>&1 && ok || nok
 check checking 386BSD 0.1;             ls -l BSD.tar.bz2                              >/dev/null 2>&1 && ok || nok
-check getting bochs sources;           svn checkout ${bochs_src}      #                >/dev/null 2>&1 && ok || nok
+check getting bochs sources;           svn checkout ${bochs_src}  bochs-code     #                >/dev/null 2>&1 && ok || nok
 find ./ -type f -name configure
 check checking bochs sources;          cd bochs-code/bochs                            >/dev/null 2>&1 && ok || nok
 check configuring bochs;               ./configure                                    \
