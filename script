@@ -53,9 +53,14 @@ function push {
 }
 
 wd=$(pwd)
-# R.I.P. svn2github
-# bochs_src=https://github.com/svn2github/bochs.git
-bochs_src=https://svn.code.sf.net/p/bochs/code/trunk
+
+# R.I.P. latest SVN, does not build anymore
+# bochs_src=https://svn.code.sf.net/p/bochs/code/trunk
+# R.I.P. svn2github, HEAD does not build anymore and is not being updated anymore
+#  seems to compile
+bochs_src=https://github.com/svn2github/bochs.git
+reset_to=81fca4481acb6c71dfd2d9dff974bf6c36f593a1
+
 ftproot=$(grep "^ftp:" /etc/passwd|cut -d ':' -f 6)
 ftpconv=$(find /etc/ -name vsftpd.conf 2>/dev/null|fgrep -v init)
 flop=BSD/386bsd-0.1/bootable/dist.fs
@@ -126,17 +131,18 @@ chmod +x tunconfig
 # check getting bochs sources;           git clone --depth 1 ${bochs_src}               >/dev/null 2>&1 && ok || nok
 # check checking bochs sources;          cd bochs/bochs                                 >/dev/null 2>&1 && ok || nok
 
-#(
+(
 check checking wget;                   wget --help                                    >/dev/null 2>&1 && ok || nok
 check checking gcc;                    gcc --version                                  >/dev/null 2>&1 && ok || nok
 check checking gcc-c++;                g++ --version                                  >/dev/null 2>&1 && ok || nok
 check checking ncurses;                ls -l /usr/include/ncurses.h                   >/dev/null 2>&1 && ok || nok
 check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                       >/dev/null 2>&1 && ok || nok
 check checking 386BSD 0.1;             ls -l BSD.tar.bz2                              >/dev/null 2>&1 && ok || nok
-check getting bochs sources;           svn checkout ${bochs_src}  bochs-code          >/dev/null 2>&1 && ok || nok
-check checking bochs sources;          cd bochs-code/bochs                            >/dev/null 2>&1 && ok || nok
-                                        # try w/o --enable-cpu-level=3                         \
+check getting bochs sources;           git pull ${bochs_src}                          >/dev/null 2>&1 && ok || nok
+check checking bochs sources;          cd bochs/bochs                                 >/dev/null 2>&1 && ok || nok
+check reverting to last known good;    git reset --hard "${reset_to}"                 >/dev/null 2>&1 && ok || nok
 check configuring bochs;               ./configure                                    \
+                                         --enable-cpu-level=3                         \
                                          --enable-fpu                                 \
                                          --enable-ne2000                              \
                                          --with-term                                  \
@@ -168,7 +174,7 @@ check boot floppy;                     (sudo cat ${ftproot}/${flop};            
                                          dd if=/dev/zero bs=1 count=245760            \
                                          )>boot.img 2>/dev/null; ls boot.img          >/dev/null 2>&1 && ok || nok
 check creating empty disk;             printf "1\nhd\nflat\n504\ndisk.img\n" |bximage >/dev/null 2>&1 && ok || nok
-##)|format
+)|format
 
 
 # first boot ##########################
