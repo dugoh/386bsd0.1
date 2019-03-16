@@ -188,9 +188,10 @@ __EOF
 
 touch out
 (
-  until grep -q '#' out ; do
+  until egrep -q '#|werase' out ; do
     sleep 5
   done
+  sleep 5
   slowcat ./1 2 .1
 )| TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_1.txt
