@@ -138,7 +138,7 @@ check checking gcc-c++;                g++ --version                            
 check checking ncurses;                ls -l /usr/include/ncurses.h                   >/dev/null 2>&1 && ok || nok
 check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                       >/dev/null 2>&1 && ok || nok
 check checking 386BSD 0.1;             ls -l BSD.tar.bz2                              >/dev/null 2>&1 && ok || nok
-check getting bochs sources;           git pull "${bochs_src}"                          >/dev/null 2>&1 && ok || nok
+check getting bochs sources;           git pull "${bochs_src}"          #                >/dev/null 2>&1 && ok || nok
 check checking bochs sources;          cd bochs/bochs                   #              >/dev/null 2>&1 && ok || nok
 check reverting to last known good;    git reset --hard "${reset_to}"   #              >/dev/null 2>&1 && ok || nok
 check configuring bochs;               ./configure                                    \
