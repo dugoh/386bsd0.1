@@ -253,9 +253,7 @@ check add 2 hours to clock;           sed -i -e "s/740771288/740778488/" bochsrc
 
 (
 check creating gh-pages;              mkdir gh-pages ; cd gh-pages                      >/dev/null 2>&1 && ok || nok
-pwd
-find / -name "bochs.ta*"
-check add bochs;                      mv ../bochs.tar.bz2 ./                            >/dev/null 2>&1 && ok || nok
+check add bochs;                      mv ../bochs/bochs.tar.bz2 ./                      >/dev/null 2>&1 && ok || nok
 check add the hard disk;              mv ../disk.img ./                                 >/dev/null 2>&1 && ok || nok
 check compress the disk;              bzip2 --best disk.img                             >/dev/null 2>&1 && ok || nok
 check split the disk in parts;        split -b 50m "disk.img.bz2" "disk.part-"          >/dev/null 2>&1 && ok || nok
