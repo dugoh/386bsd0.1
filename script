@@ -177,7 +177,6 @@ check boot floppy;                     (sudo cat ${ftproot}/${flop};            
 #check creating empty disk;             printf "1\nhd\nflat\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
 #check creating empty disk;             printf "1\nhd\nflat\n512\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
 check creating empty disk;             dd if=/dev/zero of=disk.img bs=1048576 count=504 >/dev/null 2>&1 && ok || nok
-bximage --help
 #)|format
 
 
@@ -233,9 +232,10 @@ __EOF
 
 touch out
 (
-  until grep -q '#' out ; do
+  until egrep -q '#|werase' out ; do
     sleep 5
   done
+  sleep 5
   slowcat ./2 4 1
 )| TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_2.txt
