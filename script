@@ -174,7 +174,9 @@ check bochs config present;            ls bochsrc                               
 check boot floppy;                     (sudo cat ${ftproot}/${flop};                  \
                                          dd if=/dev/zero bs=1 count=245760            \
                                          )>boot.img 2>/dev/null; ls boot.img          >/dev/null 2>&1 && ok || nok
-check creating empty disk;             printf "1\nhd\nflat\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
+#check creating empty disk;             printf "1\nhd\nflat\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
+check creating empty disk;             printf "1\nhd\nflat\n512\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
+
 bximage --help
 #)|format
 
