@@ -176,7 +176,7 @@ check boot floppy;                     (sudo cat ${ftproot}/${flop};            
                                          )>boot.img 2>/dev/null; ls boot.img          >/dev/null 2>&1 && ok || nok
 #check creating empty disk;             printf "1\nhd\nflat\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
 #check creating empty disk;             printf "1\nhd\nflat\n512\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
-check creating empty disk;             dd if=/dev/zero of=d.img bs=1048576 count=504 >/dev/null 2>&1 && ok || nok
+check creating empty disk;             dd if=/dev/zero of=disk.img bs=1048576 count=504 >/dev/null 2>&1 && ok || nok
 bximage --help
 #)|format
 
