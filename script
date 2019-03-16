@@ -54,10 +54,10 @@ function push {
 
 wd=$(pwd)
 
-# R.I.P. latest SVN, does not build anymore
+# R.I.P. bochs, latest SVN, does not build anymore
 # bochs_src=https://svn.code.sf.net/p/bochs/code/trunk
 # R.I.P. svn2github, HEAD does not build anymore and is not being updated anymore
-#  seems to compile
+# 81fca4481acb6c71dfd2d9dff974bf6c36f593a1 seems to compile
 bochs_src=https://github.com/svn2github/bochs.git
 reset_to=81fca4481acb6c71dfd2d9dff974bf6c36f593a1
 
@@ -127,57 +127,51 @@ sudo /sbin/iptables -t nat -s 192.168.1.0/24 ! -d 192.168.1.0/24 -A POSTROUTING 
 __EOF
 chmod +x tunconfig
 
-# R.I.P. svn2github 
-# check getting bochs sources;           git clone --depth 1 ${bochs_src}               >/dev/null 2>&1 && ok || nok
-# check checking bochs sources;          cd bochs/bochs                                 >/dev/null 2>&1 && ok || nok
-
-#(
-check checking wget;                   wget --help                                    >/dev/null 2>&1 && ok || nok
-check checking gcc;                    gcc --version                                  >/dev/null 2>&1 && ok || nok
-check checking gcc-c++;                g++ --version                                  >/dev/null 2>&1 && ok || nok
-check checking ncurses;                ls -l /usr/include/ncurses.h                   >/dev/null 2>&1 && ok || nok
-check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                       >/dev/null 2>&1 && ok || nok
-check checking 386BSD 0.1;             ls -l BSD.tar.bz2                              >/dev/null 2>&1 && ok || nok
-check getting bochs sources;           git clone "${bochs_src}"          #                >/dev/null 2>&1 && ok || nok
-check checking bochs sources;          cd bochs                   #              >/dev/null 2>&1 && ok || nok
-check reverting to last known good;    git reset --hard "${reset_to}"   #              >/dev/null 2>&1 && ok || nok
+(
+check checking wget;                   wget --help                                      >/dev/null 2>&1 && ok || nok
+check checking gcc;                    gcc --version                                    >/dev/null 2>&1 && ok || nok
+check checking gcc-c++;                g++ --version                                    >/dev/null 2>&1 && ok || nok
+check checking ncurses;                ls -l /usr/include/ncurses.h                     >/dev/null 2>&1 && ok || nok
+check checking vsftpd;                 ps -ef|grep -qv [v]sftpd                         >/dev/null 2>&1 && ok || nok
+check checking 386BSD 0.1;             ls -l BSD.tar.bz2                                >/dev/null 2>&1 && ok || nok
+check getting bochs sources;           git clone "${bochs_src}"                         >/dev/null 2>&1 && ok || nok
+check checking bochs sources;          cd bochs                                         >/dev/null 2>&1 && ok || nok
+check reverting to last known good;    git reset --hard "${reset_to}"                   >/dev/null 2>&1 && ok || nok
 cd bochs
-check configuring bochs;               ./configure                                    \
-                                         --enable-cpu-level=3                         \
-                                         --enable-fpu                                 \
-                                         --enable-ne2000                              \
-                                         --with-term                                  \
-                                         --with-nogui                                 \
-                                         --enable-all-optimizations                   \
-                                         --enable-docbook=no                          >/dev/null 2>&1 && ok || nok
-check building bochs;                  make                             #             >/dev/null 2>&1 && ok || nok
-check installing bochs;                sudo make install                              >/dev/null 2>&1 && ok || nok
-check setting capabilities;            sudo setcap                                    \
-                                         CAP_NET_ADMIN,CAP_NET_RAW=eip                \
-                                         /usr/local/bin/bochs                         >/dev/null 2>&1 && ok || nok
-check opening anon ftp and rate limit; printf "anonymous_enable=Yes\n"                \
-                                                       |sudo tee -a ${ftpconv}        >/dev/null 2>&1 && ok || nok
-check checking ftproot;                cd ${ftproot}                                  >/dev/null 2>&1 && ok || nok
-check extracting distribution/patches; bunzip2 -c ${wd}/BSD.tar.bz2 |sudo tar -xf -   >/dev/null 2>&1 && ok || nok
-check correct ownership;               sudo chown -R ftp:ftp ${ftproot}               >/dev/null 2>&1 && ok || nok
-check correct ftproot permissions;     sudo chmod -R a-w ${ftproot}                   >/dev/null 2>&1 && ok || nok
-check correct file permissions;        sudo chmod 644 $(sudo find ${ftproot} -type f) >/dev/null 2>&1 && ok || nok
-check correct directory permissions;   sudo chmod 555 $(sudo find ${ftproot} -type d) >/dev/null 2>&1 && ok || nok
-check restarting vftpd;                sudo restart vsftpd                            >/dev/null 2>&1 && ok || nok
-check tunconfig script present;        cd $wd && ls tunconfig                         >/dev/null 2>&1 && ok || nok
-check checking for free range;         sudo ifconfig| fgrep -q                        \
-                                         $(grep iptables tunconfig                    \
-                                         |head -1                                     \
-                                         |sed -e's/.*-d //'                           \
-                                         |awk -F'.' '{print ":"$1"."$2"."}')          2>/dev/null && warn || ok
-check bochs config present;            ls bochsrc                                     >/dev/null 2>&1 && ok || nok
-check boot floppy;                     (sudo cat ${ftproot}/${flop};                  \
-                                         dd if=/dev/zero bs=1 count=245760            \
-                                         )>boot.img 2>/dev/null; ls boot.img          >/dev/null 2>&1 && ok || nok
-#check creating empty disk;             printf "1\nhd\nflat\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
-#check creating empty disk;             printf "1\nhd\nflat\n512\n504\ndisk.img\n" |bximage #>/dev/null 2>&1 && ok || nok
+check configuring bochs;               ./configure                                      \
+                                         --enable-cpu-level=3                           \
+                                         --enable-fpu                                   \
+                                         --enable-ne2000                                \
+                                         --with-term                                    \
+                                         --with-nogui                                   \
+                                         --enable-all-optimizations                     \
+                                         --enable-docbook=no                            >/dev/null 2>&1 && ok || nok
+check building bochs;                  make                                             >/dev/null 2>&1 && ok || nok
+check installing bochs;                sudo make install                                >/dev/null 2>&1 && ok || nok
+check setting capabilities;            sudo setcap                                      \
+                                         CAP_NET_ADMIN,CAP_NET_RAW=eip                  \
+                                         /usr/local/bin/bochs                           >/dev/null 2>&1 && ok || nok
+check opening anon ftp and rate limit; printf "anonymous_enable=Yes\n"                  \
+                                         |sudo tee -a ${ftpconv}                        >/dev/null 2>&1 && ok || nok
+check checking ftproot;                cd ${ftproot}                                    >/dev/null 2>&1 && ok || nok
+check extracting distribution/patches; bunzip2 -c ${wd}/BSD.tar.bz2 |sudo tar -xf -     >/dev/null 2>&1 && ok || nok
+check correct ownership;               sudo chown -R ftp:ftp ${ftproot}                 >/dev/null 2>&1 && ok || nok
+check correct ftproot permissions;     sudo chmod -R a-w ${ftproot}                     >/dev/null 2>&1 && ok || nok
+check correct file permissions;        sudo chmod 644 $(sudo find ${ftproot} -type f)   >/dev/null 2>&1 && ok || nok
+check correct directory permissions;   sudo chmod 555 $(sudo find ${ftproot} -type d)   >/dev/null 2>&1 && ok || nok
+check restarting vftpd;                sudo restart vsftpd                              >/dev/null 2>&1 && ok || nok
+check tunconfig script present;        cd $wd && ls tunconfig                           >/dev/null 2>&1 && ok || nok
+check checking for free range;         sudo ifconfig| fgrep -q                          \
+                                         $(grep iptables tunconfig                      \
+                                         |head -1                                       \
+                                         |sed -e's/.*-d //'                             \
+                                         |awk -F'.' '{print ":"$1"."$2"."}')            2>/dev/null && warn || ok
+check bochs config present;            ls bochsrc                                       >/dev/null 2>&1 && ok || nok
+check boot floppy;                     (sudo cat ${ftproot}/${flop};                    \
+                                         dd if=/dev/zero bs=1 count=245760              \
+                                         )>boot.img 2>/dev/null; ls boot.img            >/dev/null 2>&1 && ok || nok
 check creating empty disk;             dd if=/dev/zero of=disk.img bs=1048576 count=504 >/dev/null 2>&1 && ok || nok
-#)|format
+)|format
 
 
 # first boot ##########################
@@ -255,15 +249,15 @@ check add 2 hours to clock;           sed -i -e "s/740771288/740778488/" bochsrc
 ######################################
 
 (
-check creating gh-pages;              mkdir gh-pages ; cd gh-pages                    >/dev/null 2>&1 && ok || nok
-check add the hard disk;              mv ../disk.img ./                               >/dev/null 2>&1 && ok || nok
-check compress the disk;              bzip2 --best disk.img                           >/dev/null 2>&1 && ok || nok
-check split the disk in parts;        split -b 50m "disk.img.bz2" "disk.part-"        >/dev/null 2>&1 && ok || nok
-check remove the unsplit disk;        rm disk.img.bz2                                 >/dev/null 2>&1 && ok || nok
-check add the floppy disk;            mv ../boot.img ./                               >/dev/null 2>&1 && ok || nok
-check add the bochs config;           mv ../bochsrc ./                                >/dev/null 2>&1 && ok || nok
-check add the TUN config;             mv ../tunconfig ./                              >/dev/null 2>&1 && ok || nok
-check add the screen output;          mv ../out_* ./                                  >/dev/null 2>&1 && ok || nok
-check create an index page;           index                                           >/dev/null 2>&1 && ok || nok
-check push to gh-pages;               push                                            >/dev/null 2>&1 && ok || nok
+check creating gh-pages;              mkdir gh-pages ; cd gh-pages                      >/dev/null 2>&1 && ok || nok
+check add the hard disk;              mv ../disk.img ./                                 >/dev/null 2>&1 && ok || nok
+check compress the disk;              bzip2 --best disk.img                             >/dev/null 2>&1 && ok || nok
+check split the disk in parts;        split -b 50m "disk.img.bz2" "disk.part-"          >/dev/null 2>&1 && ok || nok
+check remove the unsplit disk;        rm disk.img.bz2                                   >/dev/null 2>&1 && ok || nok
+check add the floppy disk;            mv ../boot.img ./                                 >/dev/null 2>&1 && ok || nok
+check add the bochs config;           mv ../bochsrc ./                                  >/dev/null 2>&1 && ok || nok
+check add the TUN config;             mv ../tunconfig ./                                >/dev/null 2>&1 && ok || nok
+check add the screen output;          mv ../out_* ./                                    >/dev/null 2>&1 && ok || nok
+check create an index page;           index                                             >/dev/null 2>&1 && ok || nok
+check push to gh-pages;               push                                              >/dev/null 2>&1 && ok || nok
 )|format
