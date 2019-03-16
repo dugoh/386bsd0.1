@@ -148,6 +148,9 @@ check configuring bochs;               ./configure                              
                                          --enable-docbook=no                            >/dev/null 2>&1 && ok || nok
 check building bochs;                  make                                             >/dev/null 2>&1 && ok || nok
 check installing bochs;                sudo make install                                >/dev/null 2>&1 && ok || nok
+cd ..
+check tarring up bochs;                tar -cvf bochs.tar ./bochs                       >/dev/null 2>&1 && ok || nok
+check compressing bochs tarball;       bzip2 --best bochs.tar                           >/dev/null 2>&1 && ok || nok
 check setting capabilities;            sudo setcap                                      \
                                          CAP_NET_ADMIN,CAP_NET_RAW=eip                  \
                                          /usr/local/bin/bochs                           >/dev/null 2>&1 && ok || nok
@@ -250,6 +253,7 @@ check add 2 hours to clock;           sed -i -e "s/740771288/740778488/" bochsrc
 
 (
 check creating gh-pages;              mkdir gh-pages ; cd gh-pages                      >/dev/null 2>&1 && ok || nok
+check add bochs;                      mv ../bochs.tar.bz2 ./                            >/dev/null 2>&1 && ok || nok
 check add the hard disk;              mv ../disk.img ./                                 >/dev/null 2>&1 && ok || nok
 check compress the disk;              bzip2 --best disk.img                             >/dev/null 2>&1 && ok || nok
 check split the disk in parts;        split -b 50m "disk.img.bz2" "disk.part-"          >/dev/null 2>&1 && ok || nok
