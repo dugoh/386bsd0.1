@@ -244,14 +244,12 @@ check add 2 hours to clock;           sed -i -e "s/740764088/740771288/" bochsrc
 
 # third boot #########################
 touch out
-TERM=vt100 bochs -q -f bochsrc |tee -a out
+(sleep 30; echo)|TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_3.txt
-(
-check add 2 hours to clock;           sed -i -e "s/740771288/740778488/" bochsrc      >/dev/null 2>&1 && ok || nok
-)|format
 ######################################
 
 (
+check add 2 hours to clock;           sed -i -e "s/740771288/740778488/" bochsrc      >/dev/null 2>&1 && ok || nok
 check creating gh-pages;              mkdir gh-pages ; cd gh-pages                      >/dev/null 2>&1 && ok || nok
 check add bochs;                      mv ../bochs/bochs.tar.bz2 ./                      >/dev/null 2>&1 && ok || nok
 check add the hard disk;              mv ../disk.img ./                                 >/dev/null 2>&1 && ok || nok
