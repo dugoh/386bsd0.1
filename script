@@ -245,7 +245,6 @@ check add 2 hours to clock;           sed -i -e "s/740764088/740771288/" bochsrc
 # third boot #########################
 touch out
 (sleep 33; echo)|TERM=vt100 bochs -q -f bochsrc |tee -a out
-(sleep 33; echo)|TERM=vt100 bochs -q -f bochsrc |tee -a out
 mv out out_3.txt
 ######################################
 
