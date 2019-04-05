@@ -25,6 +25,8 @@ Reasonable values are:
 
 In this build a pristine 386bsd 0.1 as released is installed and the 2 patch kits are placed on the filesystem for convenience, hence the choice for something slightly over 740756888. This is done so the arrow of time doesn't look broken when looking at the timestamps on the filesystem.
 
+The guide continues at https://github.com/dugoh/386bsd0.1-b
+
 # Warning
 
 This is being maintained with github and travis-ci as the IDE, I don't do branches and have no qualms using master as a scratch pad. Hic Sunt Leones, here be dragons, buyer beware, sorry for the ugly commit messages and all that.
